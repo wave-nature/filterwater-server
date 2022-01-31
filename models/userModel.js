@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema(
   {
@@ -27,6 +28,11 @@ const userSchema = new mongoose.Schema(
       enum: [10, 20],
       required: [true, 'user must have valid connection'],
     },
+    role: {
+      type: String,
+      enum: ['admin', 'super-admin', 'user'],
+      default: 'user',
+    },
     password: {
       type: String,
       minlength: 4,
@@ -36,9 +42,9 @@ const userSchema = new mongoose.Schema(
       type: String,
       validate: {
         validator: function (val) {
-          return val !== this.password;
+          return val === this.password;
         },
-        message: 'password and password confirm must be same',
+        message: 'password and confirm password are not same',
       },
       required: [true, 'user must re-enter password'],
     },
@@ -47,6 +53,22 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next();
+
+  this.password = await bcrypt.hash(this.password, 10);
+  this.passwordConfirm = undefined;
+
+  next();
+});
+
+userSchema.methods.checkPassword = async function (
+  userPassword,
+  savedPassword
+) {
+  return await bcrypt.compare(userPassword, savedPassword);
+};
 
 const User = mongoose.model('User', userSchema);
 
