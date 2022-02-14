@@ -7,6 +7,11 @@ const router = express.Router();
 router.post('/signup', authController.signup);
 router.post('/login', authController.login);
 
-router.get('/', userController.allUsers);
+router.get(
+  '/',
+  authController.protect,
+  authController.restrictTo('super-admin'),
+  userController.allUsers
+);
 
 module.exports = router;

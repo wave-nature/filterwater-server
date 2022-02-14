@@ -23,9 +23,14 @@ const userSchema = new mongoose.Schema(
     address: {
       type: String,
     },
+    wardNumber: {
+      type: Number,
+      default: 18,
+      required: [true, 'user must have ward number'],
+    },
     connectionFor: {
       type: Number,
-      enum: [10, 20],
+      enum: [0, 10, 20],
       required: [true, 'user must have valid connection'],
     },
     role: {
@@ -35,8 +40,9 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      minlength: 4,
+      minlength: [4, 'at least 4 characters required'],
       required: [true, 'user must have a password'],
+      select: false,
     },
     passwordConfirm: {
       type: String,
@@ -68,6 +74,15 @@ userSchema.methods.checkPassword = async function (
   savedPassword
 ) {
   return await bcrypt.compare(userPassword, savedPassword);
+};
+
+userSchema.methods.userChangedPassword = function (jwtIssued, updatedPassword) {
+  if (this.updatedAt && this.isModified('password')) {
+    const passwordUpdatedAt = parseInt(Date.now(updatedPassword) / 1000, 10);
+    console.log(jwtIssued, passwordUpdatedAt);
+    return updatedPassword > jwtIssued;
+  }
+  return false;
 };
 
 const User = mongoose.model('User', userSchema);
