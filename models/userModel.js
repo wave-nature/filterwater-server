@@ -33,10 +33,17 @@ const userSchema = new mongoose.Schema(
       enum: [0, 10, 20],
       required: [true, 'user must have valid connection'],
     },
+    photo: {
+      type: String,
+    },
     role: {
       type: String,
       enum: ['admin', 'super-admin', 'user'],
       default: 'user',
+    },
+    active: {
+      type: Boolean,
+      default: true,
     },
     password: {
       type: String,
@@ -66,6 +73,11 @@ userSchema.pre('save', async function (next) {
   this.password = await bcrypt.hash(this.password, 10);
   this.passwordConfirm = undefined;
 
+  next();
+});
+
+userSchema.pre(/^find/, function (next) {
+  this.find({ active: { $ne: false } });
   next();
 });
 

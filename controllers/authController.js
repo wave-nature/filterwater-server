@@ -62,6 +62,13 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError('Please enter email or password', 404));
 
   const user = await User.findOne({ email }).select('+password');
+  if (!user.active)
+    return next(
+      new AppError(
+        'You just deleted your account, please send email to vivek30bhadouria@gmail.com to activate your account',
+        400
+      )
+    );
 
   if (!user) return next(new AppError('No user found with this email', 404));
 
@@ -115,3 +122,25 @@ exports.restrictTo = (...roles) => {
     else next();
   };
 };
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  const { currentPassword, password, passwordConfirm } = req.body;
+
+  const user = await User.findById(req.user.id).select('+password');
+
+  const passwordIsCorrect = await user.checkPassword(
+    currentPassword,
+    user.password
+  );
+
+  if (!passwordIsCorrect)
+    return next(
+      new AppError('current password is incorrect. Please try again!', 400)
+    );
+
+  user.password = password;
+  user.passwordConfirm = passwordConfirm;
+  await user.save();
+
+  sendToken(user, res, 201);
+});
