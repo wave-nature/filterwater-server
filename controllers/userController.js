@@ -3,7 +3,40 @@ const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
 
 exports.allUsers = catchAsync(async (req, res, next) => {
-  const users = await User.find();
+  const currentUser = req.user;
+  const query = req.query;
+  const queryObj = { ...query };
+  const excludeFields = ['page', 'sort', 'limit', 'fields'];
+
+  excludeFields.forEach((el) => delete queryObj[el]);
+  let users;
+
+  if (currentUser.role === 'admin') {
+    const { page = 1, limit = 10 } = req.query;
+    const skip = (page - 1) * limit;
+    const wardNumber = currentUser.wardNumber;
+    const adminQueryObj = { ...queryObj };
+    delete adminQueryObj['role'];
+
+    const mongoQuery = User.find({
+      wardNumber,
+      role: { $ne: 'admin' },
+      ...adminQueryObj,
+    });
+    users = await mongoQuery.skip(skip).limit(limit);
+  } else {
+    const { page = 1, limit = 10 } = req.query;
+    const skip = (page - 1) * limit;
+
+    const mongoQuery = User.find(queryObj);
+    users = await mongoQuery.skip(skip).limit(limit);
+
+    if (page) {
+      const numOfUsers = await User.countDocuments();
+      if (skip >= numOfUsers)
+        return next(new AppError('No result found 😥', 404));
+    }
+  }
 
   res.status(201).json({
     status: 'success',

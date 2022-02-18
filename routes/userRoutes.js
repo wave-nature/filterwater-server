@@ -9,8 +9,8 @@ router.post('/login', authController.login);
 
 router.get(
   '/',
-  // authController.protect,
-  // authController.restrictTo('super-admin','admin'),
+  authController.protect,
+  authController.restrictTo('super-admin', 'admin'),
   userController.allUsers
 );
 router.get('/me', authController.protect, userController.getMe);
