@@ -5,6 +5,7 @@ const { globalErrorHandler } = require('./controllers/errorController');
 const userRouter = require('./routes/userRoutes');
 const deliveryRouter = require('./routes/deliveryRoutes');
 const queryRouter = require('./routes/queryRoutes');
+const contactRouter = require('./routes/contactRoutes');
 const AppError = require('./utils/AppError');
 
 const app = express();
@@ -17,6 +18,7 @@ app.use(cookieParser());
 app.use('/api/users', userRouter);
 app.use('/api/deliveries', deliveryRouter);
 app.use('/api/queries', queryRouter);
+app.use('/api/contacts', contactRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`This url ${req.url} does not exist`, 404));
