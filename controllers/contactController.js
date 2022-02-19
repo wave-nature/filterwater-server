@@ -12,7 +12,9 @@ exports.createContact = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllContacts = catchAsync(async (req, res, next) => {
-  const contacts = await Contact.find();
+  const { page = 1, limit = 10 } = req.query;
+  const skip = (page - 1) * limit;
+  const contacts = await Contact.find().skip(skip).limit(limit);
   res.status(200).json({
     status: 'success',
     results: contacts.length,

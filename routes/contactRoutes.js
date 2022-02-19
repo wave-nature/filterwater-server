@@ -9,7 +9,7 @@ const router = express.Router({ mergeParams: true });
 
 router
   .route('/')
-  .post(restrictTo('user'), createContact)
+  .post(createContact)
   .get(protect, restrictTo('super-admin'), getAllContacts);
 
 router.use(protect, restrictTo('super-admin'));
