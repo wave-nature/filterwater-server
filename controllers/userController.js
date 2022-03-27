@@ -12,7 +12,7 @@ exports.allUsers = catchAsync(async (req, res, next) => {
   let users;
 
   if (currentUser.role === 'admin') {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 7 } = req.query;
     const skip = (page - 1) * limit;
     const wardNumber = currentUser.wardNumber;
     const adminQueryObj = { ...queryObj };
@@ -20,15 +20,24 @@ exports.allUsers = catchAsync(async (req, res, next) => {
 
     const mongoQuery = User.find({
       wardNumber,
-      role: { $ne: 'admin' },
+      role: { $nin: ['admin', 'super-admin'] },
       ...adminQueryObj,
     });
     users = await mongoQuery.skip(skip).limit(limit);
-  } else {
-    const { page = 1, limit = 10 } = req.query;
+  }
+  if (currentUser.role === 'super-admin') {
+    const { page = 1, limit = 7 } = req.query;
     const skip = (page - 1) * limit;
-
-    const mongoQuery = User.find(queryObj);
+    let query = { ...queryObj };
+    if (query && query.hasOwnProperty('deliveryStatus')) {
+      if (query.deliveryStatus === 'false') {
+        query = { deliveryStatus: { $ne: true } }; // to get not delivered users
+      }
+      if (query.deliveryStatus === 'true') {
+        query = { deliveryStatus: true }; // to get delivered users
+      }
+    }
+    const mongoQuery = User.find(query);
     users = await mongoQuery.skip(skip).limit(limit);
 
     if (page) {
@@ -38,9 +47,9 @@ exports.allUsers = catchAsync(async (req, res, next) => {
     }
   }
 
-  res.status(201).json({
+  res.status(200).json({
     status: 'success',
-    result: users.length,
+    results: users.length,
     users,
   });
 });

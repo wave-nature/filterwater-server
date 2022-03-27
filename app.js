@@ -1,6 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 const { globalErrorHandler } = require('./controllers/errorController');
 const userRouter = require('./routes/userRoutes');
 const deliveryRouter = require('./routes/deliveryRoutes');
@@ -9,8 +10,11 @@ const contactRouter = require('./routes/contactRoutes');
 const AppError = require('./utils/AppError');
 
 const app = express();
+app.enable('trust proxy');
 
 app.use(morgan('dev'));
+app.use(cors());
+
 //BODY PARSER
 app.use(express.json({ limit: '20kb' }));
 app.use(cookieParser());

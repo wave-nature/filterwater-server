@@ -45,6 +45,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    deliveryStatus: {
+      type: Boolean,
+      default: false,
+    },
     password: {
       type: String,
       minlength: [4, 'at least 4 characters required'],

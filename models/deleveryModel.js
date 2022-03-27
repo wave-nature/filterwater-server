@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const User = require('./userModel');
 
 const deliverySchema = new mongoose.Schema(
   {
@@ -30,6 +31,13 @@ deliverySchema.pre('save', function (next) {
     next();
   }
   next();
+});
+
+deliverySchema.post('save', async function () {
+  const userId = this.user;
+  const user = await User.findById(userId);
+  user.deliveryStatus = this.delivered;
+  await user.save({ validateBeforeSave: false });
 });
 
 const Delivery = mongoose.model('Delivery', deliverySchema);
