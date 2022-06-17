@@ -7,6 +7,7 @@ const userRouter = require('./routes/userRoutes');
 const deliveryRouter = require('./routes/deliveryRoutes');
 const queryRouter = require('./routes/queryRoutes');
 const contactRouter = require('./routes/contactRoutes');
+const paymentRouter = require('./routes/paymentRoutes');
 const AppError = require('./utils/AppError');
 
 const app = express();
@@ -23,6 +24,7 @@ app.use('/api/users', userRouter);
 app.use('/api/deliveries', deliveryRouter);
 app.use('/api/queries', queryRouter);
 app.use('/api/contacts', contactRouter);
+app.use('/api/payments', paymentRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`This url ${req.url} does not exist`, 404));

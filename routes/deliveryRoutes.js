@@ -9,16 +9,18 @@ const {
   updateDelivery,
   deleteDelivery,
   getDeliveriesOfSingleUser,
+  deleteAllDeliveries,
 } = deliveryController;
 
 const router = express.Router({ mergeParams: true });
 
 router.get('/myDeliveries', protect, getDeliveriesOfSingleUser);
+router.delete('/deleteAll', deleteAllDeliveries);
 router
   .route('/')
   .get(protect, restrictTo('super-admin', 'admin'), getDeliveriesOfSingleUser)
-  .post(protect, restrictTo('super-admin', 'admin'), createDelivery)
-  .get(protect, getAllDeliveries);
+  .get(protect, restrictTo('super-admin'), getAllDeliveries)
+  .post(protect, restrictTo('super-admin', 'admin'), createDelivery);
 
 router
   .route('/:id')

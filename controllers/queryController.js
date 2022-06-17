@@ -12,7 +12,10 @@ exports.createQuery = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllQueries = catchAsync(async (req, res, next) => {
-  const queries = await Query.find();
+  const queries = await Query.find().populate(
+    'user',
+    'name mobile wardNumber connectionFor'
+  );
   res.status(200).json({
     status: 'success',
     results: queries.length,
@@ -21,7 +24,10 @@ exports.getAllQueries = catchAsync(async (req, res, next) => {
 });
 
 exports.getQuery = catchAsync(async (req, res, next) => {
-  const query = await Query.findById(req.params.id);
+  const query = await Query.findById(req.params.id).populate(
+    'user',
+    'name mobile wardNumber connectionFor'
+  );
 
   if (!query) return next(new AppError('No query found with this id', 404));
 
@@ -30,6 +36,20 @@ exports.getQuery = catchAsync(async (req, res, next) => {
     query,
   });
 });
+
+exports.myQueries = catchAsync(async (req, res, next) => {
+  const user = req.user.id;
+
+  const queries = await Query.find({ user });
+
+  if (!queries) return next(new AppError('No queries found', 404));
+
+  res.status(200).json({
+    status: 'success',
+    queries,
+  });
+});
+
 exports.updateQuery = catchAsync(async (req, res, next) => {
   let query;
   if (req.user.role === 'super-admin') {
@@ -65,3 +85,11 @@ exports.deleteQuery = catchAsync(async (req, res, next) => {
     data: null,
   });
 });
+
+exports.deleteAllQueries = async (req, res, next) => {
+  await Query.deleteMany();
+  res.status(204).json({
+    status: 'success',
+    data: null,
+  });
+};

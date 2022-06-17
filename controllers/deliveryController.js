@@ -101,3 +101,11 @@ exports.getDeliveriesOfSingleUser = catchAsync(async (req, res, next) => {
     deliveries,
   });
 });
+
+exports.deleteAllDeliveries = async (req, res, next) => {
+  await Delivery.deleteMany();
+  res.status(204).json({
+    status: 'success',
+    data: null,
+  });
+};
